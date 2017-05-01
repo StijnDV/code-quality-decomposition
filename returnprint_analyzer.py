@@ -8,7 +8,6 @@ from baronfinder import find_function_parameters
 
 
 def analyze_function_print_return(function_definition):
-    print_formatted_function_nodes([function_definition])
     local_baron_finder = LocalBaronFinder(function_definition)
     global_defines = local_baron_finder.global_name_nodes()
     local_variables = local_baron_finder.variable_name_nodes(global_defines)
@@ -19,7 +18,7 @@ def analyze_function_print_return(function_definition):
     # Get this as a dict of names to name nodes for later feedback
     printed_variables = defaultdict(list)
     for print_node in local_baron_finder.find_all('print'):
-        for name_node in print_node.value:
+        for name_node in print_node.value.find_all('name'):
             printed_variables[name_node.value].append(name_node)
 
     # Get the variables that where returned in the function
@@ -38,7 +37,6 @@ def analyze_function_print_return(function_definition):
 
 
 def output_feedback(function_name, intersection, printed_nodes, returned_nodes):
-    print("feedback for function: ", function_name)
     for problematic_variable in intersection:
         print_nodes = printed_nodes[problematic_variable]
         return_nodes = returned_nodes[problematic_variable]

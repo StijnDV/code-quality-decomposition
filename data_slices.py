@@ -1,31 +1,37 @@
 from __future__ import print_function
-
+from itertools import takewhile
 from localbaronfinder import LocalBaronFinder
 from baronfinder import find_function_parameters
 from baronutil import name_nodes_to_dict
+from programslice import slice_string
 
-def create_dependance_graph(function_fst):
-    filtered_fst = LocalBaronFinder(function_fst)
 
+def lstripped(s):
+    return ''.join(takewhile(str.isspace, s))
+
+def get_indentation_function(function_fst):
+    lines = function_fst.value.dumps().split("\n")
+    first_not_empty_line = ""
+    for line in lines:
+        if line.strip() != "":
+            first_not_empty_line = line
+            break
+
+    return lstripped(first_not_empty_line)
 
 def get_slice_for_variable(function_fst, var_name):
-    if var_name == "a":
-        def test():
-            print("test")
-
-    slice = set()
-    search_set = set()
-    searched_set = set()
-    search_set.add(var_name)
-
-    filtered_fst = LocalBaronFinder(function_fst)
-    while len(search_set) > 0:
-        search_var = search_set.pop()
-        if search_var in searched_set:
-            continue
-        name_nodes = filtered_fst.find_all('name').filter(lambda name_node: name_node.value == search_var)
-        for name_node in name_nodes:
-            searched_set.add(name_node.value)
+    slice = list()
+    indentation = get_indentation_function(function_fst)
+    function_fst.value = indentation + var_name + ' = 0\n' + function_fst.value.dumps()
+    first_node = function_fst.find('name', value=var_name)
+    try:
+        slice = slice_string(var_name,
+                    first_node.absolute_bounding_box.top_left.line,
+                    first_node.absolute_bounding_box.top_left.column - 1,
+                    function_fst.dumps(), 'program')
+    except:
+        print("function could not be parsed by python ast is most likely not valid python")
+    return slice
 
 
 
