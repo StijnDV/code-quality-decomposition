@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 from analysers.analyser import Analyser
 from redbaron_filters import VariableFilter
 from redbaron_util import name_nodes_to_set
@@ -34,7 +36,7 @@ class ScopeAnalyser(Analyser):
         last_use = 0
         name_node_list = function_def.find_all('name', value=var_name)
         for name_node in name_node_list:
-            line = 0 # name_node.absolute_bounding_box.top_left.line
+            line = name_node.absolute_bounding_box.top_left.line
             if line < first_use:
                 first_use = line
             if line > last_use:
@@ -106,5 +108,6 @@ class ScopeAnalyser(Analyser):
         print(feedback_data)
         best_split = self.get_best_split(feedback_data)
         print(BREAK_FEEDBACK.format(str(best_split[0]), ', '.join(map(str, best_split[1]))))
+
     def output_compact_feedback(self, feedback_data_dict):
         pass
