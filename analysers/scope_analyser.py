@@ -17,7 +17,8 @@ class ScopeAnalyser(Analyser):
     def clear_cache(self):
         self.variable_filter = None
 
-    def count_non_empty_lines(self, string):
+    @staticmethod
+    def count_non_empty_lines(string):
         non_empty_lines = 0
         for line in string.splitlines(False):
             if line.strip() != '':
@@ -48,7 +49,7 @@ class ScopeAnalyser(Analyser):
         self.variable_filter = VariableFilter(file_reader.redbaron_fst).filter
 
         cleaned_function = file_reader.get_clean_function(function_def)
-        length = self.count_non_empty_lines(cleaned_function.dumps())
+        length = ScopeAnalyser.count_non_empty_lines(cleaned_function.dumps())
 
         if length < self.min_length:
             return self.default_return
@@ -67,30 +68,40 @@ class ScopeAnalyser(Analyser):
             line_indentation = len(lines[lines_index]) - len(lines[lines_index].lstrip())
             if lines[lines_index].lstrip() != '' and line_indentation != function_indentation:
                 continue
-            top_scopes = []
-            in_scopes = []
-            bottom_scopes = []
-            for scope in scopes_list:
-                if line < scope[1][0]:
-                    top_scopes.append(scope)
-                elif line > scope[1][1]:
-                    bottom_scopes.append(scope)
-                else:
-                    in_scopes.append(scope)
-            # More shared variables than would be nice as function parameters
-            if len(in_scopes) > 4:
-                continue
-            # more variables are split then are left in both functions together.
-            if len(bottom_scopes) < len(in_scopes) or len(top_scopes) < len(in_scopes):
-                continue
-            if len(bottom_scopes) <= 1 or len(top_scopes) <= 1:
+            top_scopes, in_scopes, bottom_scopes = ScopeAnalyser.get_split_opportunity(line, scopes_list)
+            if not ScopeAnalyser.is_valid_split_opportunity(top_scopes, in_scopes, bottom_scopes):
                 continue
             possible_break_points.append((line, in_scopes, lines[lines_index]))
         if possible_break_points:
             return True, possible_break_points
         return self.default_return
 
-    def get_best_split(self, feedback_data):
+    @staticmethod
+    def get_split_opportunity(line, scopes_list):
+        top_scopes, in_scopes, bottom_scopes = [], [], []
+        for scope in scopes_list:
+            if line < scope[1][0]:
+                top_scopes.append(scope)
+            elif line > scope[1][1]:
+                bottom_scopes.append(scope)
+            else:
+                in_scopes.append(scope)
+        return top_scopes, in_scopes, bottom_scopes
+
+    @staticmethod
+    def is_valid_split_opportunity(top_scopes, in_scopes, bottom_scopes):
+        # More shared variables than would be nice as function parameters
+        if len(in_scopes) > 4:
+            return False
+        # more variables are split then are left in both functions together.
+        if len(bottom_scopes) < len(in_scopes) or len(top_scopes) < len(in_scopes):
+            return False
+        if len(bottom_scopes) <= 1 or len(top_scopes) <= 1:
+            return False
+        return True
+
+    @staticmethod
+    def get_best_split(feedback_data):
         best_split = feedback_data[0]
         best_split_line_value = "test"
         for split_option in feedback_data:
@@ -105,8 +116,7 @@ class ScopeAnalyser(Analyser):
         return best_split
 
     def output_feedback(self, feedback_data):
-        print(feedback_data)
-        best_split = self.get_best_split(feedback_data)
+        best_split = ScopeAnalyser.get_best_split(feedback_data)
         print(BREAK_FEEDBACK.format(str(best_split[0]), ', '.join(map(str, best_split[1]))))
 
     def output_compact_feedback(self, feedback_data_dict):
