@@ -160,3 +160,4 @@ ENV/
 .idea/inspectionProfiles/
 .idea/misc.xml
 .idea/modules.xml
+.DS_Store

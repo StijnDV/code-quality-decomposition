@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import networkx as nx
 from collections import defaultdict
-from localbaronfinder import LocalBaronFinder
+from redbaron_python_scoping import LocalBaronFinder
 
 def build_graph(fst):
     graph = nx.Graph()

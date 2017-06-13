@@ -8,3 +8,7 @@ def print_formatted_name_nodes(name_nodes):
 def print_formatted_function_nodes(function_nodes):
     for function_node in function_nodes:
         print(function_node.name, function_node.absolute_bounding_box)
+
+
+def print_slice(slice):
+    print([node.value for node in slice])

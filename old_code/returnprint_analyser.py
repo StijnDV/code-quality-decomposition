@@ -1,18 +1,14 @@
 from __future__ import print_function
 
 from collections import defaultdict
-from baronprinter import print_formatted_function_nodes
+
+from redbaron_python_scoping import LocalBaronFinder
+from old_code.redbaron_util import find_function_parameters
 from static_feedback import MIXED_PRINT_RETURN_FEEDBACK
-from localbaronfinder import LocalBaronFinder
-from baronfinder import find_function_parameters
 
 
-def analyze_function_print_return(function_definition):
+def analyse_function_print_return(function_definition):
     local_baron_finder = LocalBaronFinder(function_definition)
-    global_defines = local_baron_finder.global_name_nodes()
-    local_variables = local_baron_finder.variable_name_nodes(global_defines)
-    local_variables.update(find_function_parameters(function_definition))
-    local_functions = local_baron_finder.find_all('def')
 
     # Get the variables that where printed in the function
     # Get this as a dict of names to name nodes for later feedback
@@ -31,9 +27,10 @@ def analyze_function_print_return(function_definition):
     # Detect the intersection between the printed and the returned variables
     # If this is not empty give feedback on not mixing printing and calculation of variables
     intersection = set(printed_variables.keys()) & set(returned_variables.keys())
-    output_feedback(function_definition.name, intersection, printed_variables, returned_variables)
-    for local_function in local_functions:
-        analyze_function_print_return(local_function)
+    if len(intersection) > 0:
+        return (True, (function_definition.name, intersection, printed_variables, returned_variables))
+    return (False, ())
+
 
 
 def output_feedback(function_name, intersection, printed_nodes, returned_nodes):
