@@ -5,8 +5,9 @@ from redbaron_python_scoping import LocalBaronFinder
 from redbaron_util import get_line_number
 
 class PlotAnalyser(Analyser):
-    def __init__(self):
+    def __init__(self, clustering_threshold):
         Analyser.__init__(self)
+        self.clustering_threshold = clustering_threshold
 
     def count_non_empty_lines(self, string):
         non_empty_lines = 0
@@ -25,7 +26,6 @@ class PlotAnalyser(Analyser):
             if index + 1 >= len(sorted_lines):
                 last_line = line
                 blocks.append((first_line, last_line))
-                first_line = None
                 break
             if sorted_lines[index + 1] - line > threshold:
                 last_line = line
@@ -43,7 +43,7 @@ class PlotAnalyser(Analyser):
         for plot_node in plot_nodes:
             plot_lines.add(get_line_number(plot_node))
 
-        blocks = self.get_plotting_blocks(plot_lines, 5)
+        blocks = self.get_plotting_blocks(plot_lines, self.clustering_threshold)
         plot_fraction = len(plot_lines) / total_code_lines
         if len(plot_lines) >= 1 and plot_fraction < 0.7:
             return (True, (len(plot_lines), total_code_lines, blocks))
