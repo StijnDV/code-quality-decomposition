@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from analysers.analyser import Analyser
 from redbaron_filters import VariableFilter
 from redbaron_python_scoping import LocalBaronFinder

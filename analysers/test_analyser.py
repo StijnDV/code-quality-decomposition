@@ -1,3 +1,4 @@
+from __future__ import print_function
 from analysers.analyser import Analyser
 
 

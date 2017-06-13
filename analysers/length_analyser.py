@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from analysers.analyser import Analyser
 from static_feedback import FUNCTION_TO_LONG_FEEDBACK, FUNCTION_TO_LONG_COMPACT_FEEDBACK
 

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from itertools import combinations
 
 from analysers.analyser import Analyser
